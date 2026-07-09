@@ -29,8 +29,7 @@ $items = @(
     "LICENSE",
     "install.ps1",
     "uninstall.ps1",
-    "hooks",
-    ".codex"
+    "hooks"
 )
 
 foreach ($item in $items) {

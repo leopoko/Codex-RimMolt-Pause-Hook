@@ -40,6 +40,17 @@ function ConvertTo-Hashtable {
     return $InputObject
 }
 
+function Write-JsonFile {
+    param(
+        [string]$Path,
+        [hashtable]$Value
+    )
+
+    $json = $Value | ConvertTo-Json -Depth 20
+    $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+    [System.IO.File]::WriteAllText($Path, $json + [Environment]::NewLine, $utf8NoBom)
+}
+
 function Remove-PauseHook {
     param(
         [string]$HooksJsonPath,
@@ -57,7 +68,7 @@ function Remove-PauseHook {
 
     if ($null -eq $config["hooks"][$EventName]) {
         $config["hooks"].Remove($EventName)
-        $config | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $HooksJsonPath -Encoding UTF8
+        Write-JsonFile -Path $HooksJsonPath -Value $config
         return
     }
 
@@ -90,7 +101,7 @@ function Remove-PauseHook {
     else {
         $config["hooks"].Remove($EventName)
     }
-    $config | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $HooksJsonPath -Encoding UTF8
+    Write-JsonFile -Path $HooksJsonPath -Value $config
 }
 
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path

@@ -60,7 +60,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
 4. Codex を再起動するか、新しい Codex セッションを開始します。
 5. Codex が hook の信頼確認を出した場合は、内容を確認して許可します。
 
-デフォルトでは、そのプロジェクトの `.codex/hooks.json` だけを変更します。ユーザー全体の `%USERPROFILE%\.codex\hooks.json` は変更しません。
+デフォルトでは、そのプロジェクトの `.codex/hooks.json` に設定を追加または更新します。既存の他の hook は残します。ユーザー全体の `%USERPROFILE%\.codex\hooks.json` は変更しません。
 
 ## 動作確認
 
@@ -116,14 +116,15 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\uninstall.ps1 -Global
 
 ## 配布する場合
 
-このリポジトリ全体を zip にしてください。利用者は zip を対象プロジェクトに展開して、`install.ps1` を実行するだけで使えます。
+リリース用 zip は GitHub Actions で自動作成されます。利用者は zip を対象プロジェクトに展開して、`install.ps1` を実行するだけで使えます。
+
+配布 zip には `.codex/hooks.json` を入れません。利用者の既存 hook 設定を展開時に上書きしないためです。`.codex/hooks.json` は `install.ps1` が既存設定を読み込んでマージします。
 
 含まれる主なファイル:
 
 - `hooks/pause-rimmolt.ps1`: RimMolt に pause を送る本体
 - `install.ps1`: 対象プロジェクトに Codex hook を追加するインストーラ
 - `uninstall.ps1`: Codex hook を削除するアンインストーラ
-- `.codex/hooks.json`: プロジェクトローカル hook 設定の例
 
 ## リリースする場合
 
