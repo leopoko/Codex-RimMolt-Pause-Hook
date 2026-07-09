@@ -1,5 +1,6 @@
 param(
     [string]$CodexHome = $(Join-Path $env:USERPROFILE ".codex"),
+    [switch]$Global,
     [switch]$ProjectOnly
 )
 
@@ -39,22 +40,39 @@ function ConvertTo-Hashtable {
     return $InputObject
 }
 
-function Remove-StopHook {
-    param([string]$HooksJsonPath)
+function Remove-PauseHook {
+    param(
+        [string]$HooksJsonPath,
+        [string]$EventName
+    )
 
     if (-not (Test-Path -LiteralPath $HooksJsonPath)) {
         return
     }
 
     $config = ConvertTo-Hashtable ((Get-Content -Raw -LiteralPath $HooksJsonPath) | ConvertFrom-Json)
-    if (-not $config.ContainsKey("hooks") -or -not $config["hooks"].ContainsKey("Stop")) {
+    if (-not $config.ContainsKey("hooks") -or -not $config["hooks"].ContainsKey($EventName)) {
+        return
+    }
+
+    if ($null -eq $config["hooks"][$EventName]) {
+        $config["hooks"].Remove($EventName)
+        $config | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $HooksJsonPath -Encoding UTF8
         return
     }
 
     $remaining = @()
-    foreach ($entry in @($config["hooks"]["Stop"])) {
+    foreach ($entry in @($config["hooks"][$EventName])) {
+        if ($null -eq $entry -or -not $entry.ContainsKey("hooks") -or $null -eq $entry["hooks"]) {
+            continue
+        }
+
         $hooks = @()
         foreach ($hook in @($entry["hooks"])) {
+            if ($null -eq $hook) {
+                continue
+            }
+
             if (-not (($hook["command"] -like "*pause-rimmolt.ps1*") -or ($hook["commandWindows"] -like "*pause-rimmolt.ps1*"))) {
                 $hooks += $hook
             }
@@ -66,15 +84,22 @@ function Remove-StopHook {
         }
     }
 
-    $config["hooks"]["Stop"] = [object[]]$remaining
+    if ($remaining.Count -gt 0) {
+        $config["hooks"][$EventName] = [object[]]$remaining
+    }
+    else {
+        $config["hooks"].Remove($EventName)
+    }
     $config | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $HooksJsonPath -Encoding UTF8
 }
 
 $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
-Remove-StopHook -HooksJsonPath (Join-Path $repoRoot ".codex\hooks.json")
+Remove-PauseHook -HooksJsonPath (Join-Path $repoRoot ".codex\hooks.json") -EventName "PreCompact"
+Remove-PauseHook -HooksJsonPath (Join-Path $repoRoot ".codex\hooks.json") -EventName "Stop"
 
-if (-not $ProjectOnly) {
-    Remove-StopHook -HooksJsonPath (Join-Path $CodexHome "hooks.json")
+if ($Global -and -not $ProjectOnly) {
+    Remove-PauseHook -HooksJsonPath (Join-Path $CodexHome "hooks.json") -EventName "PreCompact"
+    Remove-PauseHook -HooksJsonPath (Join-Path $CodexHome "hooks.json") -EventName "Stop"
     Write-Host "Removed global Codex hook from $CodexHome\hooks.json"
 }
 

@@ -1,20 +1,19 @@
 # Codex RimMolt Pause Hook
 
-Codex のターン終了時に RimMolt へ「RimWorld を一時停止する」命令を送る Windows 向け hook です。
+Codex の compact 直前に RimMolt へ「RimWorld を一時停止する」命令を送る Windows 向け hook です。
 
-長時間の Codex 作業中や Auto Compact の前後で RimWorld が進み続ける事故を減らすためのものです。
+長時間の Codex 作業中や Auto Compact のタイミングで RimWorld が進み続ける事故を減らすためのものです。
 
 ## できること
 
-- Codex の `Stop` hook で RimMolt の `set_speed` に `pause` を送ります。
+- Codex の `PreCompact` hook で RimMolt の `set_speed` に `pause` を送ります。
+- `manual` compact と `auto` compact の両方で動きます。
 - RimWorld が未ロード、RimMolt が未起動、Codex から接続できない場合でも Codex の作業自体は止めません。
 - Windows 標準の PowerShell だけで動きます。Python や Node.js は不要です。
 
 ## 注意
 
-現在確認できている Codex hook は `Stop` です。compact 専用の hook イベントは確認できていません。
-
-そのため、このツールは「compact だけ」ではなく、Codex のターン終了時に毎回 pause を送ります。Auto Compact はターンの区切りで起きるため、実用上は compact 前後で RimWorld を止める用途に使えます。
+このツールは `PreCompact` hook を使います。通常のターン終了時には動かず、compact の直前だけ pause を送ります。
 
 ## 必要なもの
 
@@ -36,7 +35,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
 4. Codex を再起動するか、新しい Codex セッションを開始します。
 5. 初回実行時に Codex が hook の信頼確認を出した場合は、内容を確認して許可します。
 
-これでユーザー全体の Codex hook と、このプロジェクト内の `.codex/hooks.json` の両方に設定されます。
+これで、このプロジェクト内の `.codex/hooks.json` にだけ Codex `PreCompact` hook が設定されます。ユーザー全体の Codex 設定は変更しません。
 
 ## 動作確認
 
@@ -64,15 +63,15 @@ RimMolt の MCP URL が違う場合は、インストール時に指定できま
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -McpUrl "http://localhost:8787/mcp"
 ```
 
-## このプロジェクトだけに設定したい場合
+## ユーザー全体に設定したい場合
 
-ユーザー全体の hook を変更したくない場合は、次を使います。
+通常は不要です。すべての Codex プロジェクトでこの hook を使いたい場合だけ、次を使います。
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -ProjectOnly
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Global
 ```
 
-この場合は `.codex/hooks.json` だけを作成・更新します。
+この場合は、プロジェクト内の `.codex/hooks.json` に加えて、ユーザー全体の `%USERPROFILE%\.codex\hooks.json` にも設定されます。
 
 ## アンインストール
 
@@ -80,10 +79,10 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -ProjectOn
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\uninstall.ps1
 ```
 
-プロジェクト内の hook だけを消す場合:
+ユーザー全体の hook も消す場合:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\uninstall.ps1 -ProjectOnly
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\uninstall.ps1 -Global
 ```
 
 ## 配布する場合
