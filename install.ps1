@@ -182,7 +182,7 @@ if (-not (Test-Path -LiteralPath $sourceHook)) {
 
 $projectCodexDir = Join-Path $repoRoot ".codex"
 $projectHooksPath = Join-Path $projectCodexDir "hooks.json"
-$projectCommand = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\hooks\pause-rimmolt.ps1" -Url "{0}"' -f $McpUrl
+$projectCommand = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File ".\hooks\pause-rimmolt.ps1" -Url "{0}" -CodexHook' -f $McpUrl
 Add-PreCompactHook -HooksJsonPath $projectHooksPath -Command $projectCommand
 
 if ($Global -and -not $ProjectOnly) {
@@ -192,7 +192,7 @@ if ($Global -and -not $ProjectOnly) {
     Copy-Item -LiteralPath $sourceHook -Destination $installedHook -Force
 
     $userHooksPath = Join-Path $CodexHome "hooks.json"
-    $userCommand = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "{0}" -Url "{1}"' -f $installedHook, $McpUrl
+    $userCommand = 'powershell.exe -NoProfile -ExecutionPolicy Bypass -File "{0}" -Url "{1}" -CodexHook' -f $installedHook, $McpUrl
     Add-PreCompactHook -HooksJsonPath $userHooksPath -Command $userCommand
 
     Write-Host "Installed global Codex PreCompact hook:"

@@ -2,6 +2,7 @@ param(
     [string]$Url = $(if ($env:RIMMOLT_MCP_URL) { $env:RIMMOLT_MCP_URL } else { "http://localhost:8787/mcp" }),
     [int]$TimeoutSeconds = 5,
     [string]$LogFile = $(if ($env:RIMMOLT_HOOK_LOG) { $env:RIMMOLT_HOOK_LOG } else { "" }),
+    [switch]$CodexHook,
     [switch]$StrictExit
 )
 
@@ -11,14 +12,17 @@ function Write-HookLog {
     param([string]$Message)
 
     $line = "[{0}] {1}" -f (Get-Date -Format "yyyy-MM-dd HH:mm:ss"), $Message
-    Write-Host $line
+    if (-not $CodexHook) {
+        Write-Host $line
+    }
 
     if (-not [string]::IsNullOrWhiteSpace($LogFile)) {
         $dir = Split-Path -Parent $LogFile
         if (-not [string]::IsNullOrWhiteSpace($dir)) {
             New-Item -ItemType Directory -Force -Path $dir | Out-Null
         }
-        Add-Content -LiteralPath $LogFile -Value $line -Encoding UTF8
+        $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+        [System.IO.File]::AppendAllText($LogFile, $line + [Environment]::NewLine, $utf8NoBom)
     }
 }
 

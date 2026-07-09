@@ -4,8 +4,8 @@
                                      {
                                          "hooks":  [
                                                        {
-                                                           "commandWindows":  "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".\\hooks\\pause-rimmolt.ps1\" -Url \"http://localhost:8787/mcp\"",
-                                                           "command":  "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".\\hooks\\pause-rimmolt.ps1\" -Url \"http://localhost:8787/mcp\"",
+                                                           "commandWindows":  "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".\\hooks\\pause-rimmolt.ps1\" -Url \"http://localhost:8787/mcp\" -CodexHook",
+                                                           "command":  "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \".\\hooks\\pause-rimmolt.ps1\" -Url \"http://localhost:8787/mcp\" -CodexHook",
                                                            "timeout":  10,
                                                            "type":  "command",
                                                            "statusMessage":  "Pausing RimWorld before compact"

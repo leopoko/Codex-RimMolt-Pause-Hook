@@ -154,6 +154,22 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-release.
 
 ## トラブルシュート
 
+### `hook returned invalid PreCompact hook JSON output` と出る
+
+古い設定では、hook スクリプトの結果表示が Codex の `PreCompact` hook 出力として解釈され、JSON ではないため失敗扱いになることがあります。
+
+最新版では、Codex から呼ばれるときだけ `-CodexHook` を付け、標準出力を出さないようにしています。次をもう一度実行して `.codex/hooks.json` を更新してください。
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
+```
+
+更新後の `.codex/hooks.json` 内の `pause-rimmolt.ps1` 呼び出しに `-CodexHook` が入っていれば修正済みです。
+
+Codex が古い hook 定義を信頼済みとして覚えている場合は、Codex を再起動するか新しい Codex セッションを開始し、必要なら `/hooks` で新しい hook 定義を確認して許可してください。
+
+### RimWorld が止まらない
+
 RimWorld が止まらない場合は、次を確認してください。
 
 - Codex で hook を設定したプロジェクトを開いている
