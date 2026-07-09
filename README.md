@@ -125,6 +125,32 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\uninstall.ps1 -Global
 - `uninstall.ps1`: Codex hook を削除するアンインストーラ
 - `.codex/hooks.json`: プロジェクトローカル hook 設定の例
 
+## リリースする場合
+
+GitHub Actions で配布用 zip を自動作成します。
+
+タグを push すると、GitHub Release が作成され、次のファイルが添付されます。
+
+- `Codex-RimMolt-Pause-Hook-<tag>.zip`
+- `SHA256SUMS.txt`
+
+例:
+
+```powershell
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+GitHub の画面から Release を作成して公開した場合も、同じ zip が自動で添付されます。
+
+手元で zip を確認したい場合:
+
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\build-release.ps1 -Version test
+```
+
+生成物は `dist\` に出力されます。
+
 ## トラブルシュート
 
 RimWorld が止まらない場合は、次を確認してください。

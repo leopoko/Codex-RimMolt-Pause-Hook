@@ -1,0 +1,65 @@
+name: Build release zip
+
+on:
+  push:
+    tags:
+      - "v*"
+  release:
+    types:
+      - published
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-release-zip:
+    name: Build release zip
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        shell: pwsh
+        run: |
+          if ("${{ github.event_name }}" -eq "release") {
+            $version = "${{ github.event.release.tag_name }}"
+          } elseif ("${{ github.ref_type }}" -eq "tag") {
+            $version = "${{ github.ref_name }}"
+          } else {
+            $version = "manual-${{ github.run_number }}"
+          }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Build zip
+        shell: pwsh
+        run: |
+          .\scripts\build-release.ps1 -Version "${{ steps.version.outputs.version }}" -OutputDir dist
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Codex-RimMolt-Pause-Hook-${{ steps.version.outputs.version }}
+          path: |
+            dist/*.zip
+            dist/SHA256SUMS.txt
+
+      - name: Attach files to GitHub Release
+        if: github.event_name == 'release' || github.ref_type == 'tag'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = "${{ steps.version.outputs.version }}"
+          gh release view $tag 2>$null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $tag --title $tag --notes "Release $tag"
+          }
+          $zip = Get-ChildItem -LiteralPath dist -Filter "*.zip" | Select-Object -First 1
+          if ($null -eq $zip) {
+            throw "Release zip was not found in dist."
+          }
+          gh release upload $tag $zip.FullName (Join-Path "dist" "SHA256SUMS.txt") --clobber
